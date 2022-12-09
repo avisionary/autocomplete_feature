@@ -161,7 +161,7 @@ ques1 = st.radio(
 
 if ques1 == "Yes":
     # Load the model and tokenizer
-    tokenizer = pickle.load(open('../model/tokenizer_avi.pkl', 'rb'))
+    tokenizer = pickle.load(open('model/tokenizer_avi.pkl', 'rb'))
     # load json and create model
     json_file = open('model/nextword.json', 'r')
     loaded_model_json = json_file.read()
