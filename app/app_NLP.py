@@ -14,6 +14,9 @@ from tensorflow.keras.models import Sequential, model_from_json
 from tensorflow.keras.models import load_model
 import numpy as np
 import pickle
+from gensim.models.word2vec import Word2Vec
+
+
 
 import bz2
 import pickle
@@ -91,7 +94,56 @@ def predict_w2v(query_sentence, dataset, model, topk=3):
         best_index = np.argsort(sim_mat)[::-1][:topk]
     return best_index
 
+def extract_best_indices(m, topk, mask=None):
+    """
+    Use sum of the cosine distance over all tokens.
+    m (np.array): cos matrix of shape (nb_in_tokens, nb_dict_tokens)
+    topk (int): number of indices to return (from high to lowest in order)
+    """
+    # return the sum on all tokens of cosinus for each sentence
+    if len(m.shape) > 1:
+        cos_sim = np.mean(m, axis=0) 
+    else: 
+        cos_sim = m
+    index = np.argsort(cos_sim)[::-1] # from highest idx to smallest score 
+    if mask is not None:
+        assert mask.shape == m.shape
+        mask = mask[index]
+    else:
+        mask = np.ones(len(cos_sim))
+    mask = np.logical_or(cos_sim[index] != 0, mask) #eliminate 0 cosine distance
+    best_index = index[mask][:topk]  
+    return best_index
 
+
+def predict_spacy(model, query_sentence, embed_mat, topk=5):
+    """
+    Predict the topk sentences after applying spacy model.
+    """
+    query_embed = model(query_sentence)
+    mat = np.array([query_embed.similarity(line) for line in embed_mat])
+    # keep if vector has a norm
+    mat_mask = np.array(
+        [True if line.vector_norm else False for line in embed_mat])
+    best_index = extract_best_indices(mat, topk=topk, mask=mat_mask)
+    return best_index
+
+
+def get_recommendations_tfidf(sentence, tfidf_mat,tokenizer):
+    
+    """
+    Return the database sentences in order of highest cosine similarity relatively to each 
+    token of the target sentence. 
+    """
+    # Embed the query sentence
+    tokens = [str(tok) for tok in tokenizer(sentence)]
+    vec = vectorizer.transform(tokens)
+    # Create list with similarity between query and dataset
+    mat = cosine_similarity(vec, tfidf_mat)
+    # Best cosine distance for each token independantly
+    print(mat.shape)
+    best_index = extract_best_indices(mat, topk=3)
+    return best_index
 
 
 print_sentence1 = st.empty()
@@ -148,11 +200,42 @@ if st.button("Get movie recommendations"):
     # word2vec_model.train(df.tok_lem_sentence.values, total_examples=word2vec_model.corpus_count, epochs=30)
     # Predict
     with st.spinner(text="In progress"):
-        word2vec_model = decompress_pickle("../model/word2vec_model_avi.pbz2") 
-        # with open("../model/word2vec_model_avi.pkl", "rb") as f:
-        #     word2vec_model = pickle.load(f)
+        #Create model
+        word2vec_model = Word2Vec(min_count=0, workers = 8, vector_size=275) 
+        # Prepare vocab
+        word2vec_model.build_vocab(df.tok_lem_sentence.values)
+        # Train
+        word2vec_model.train(df.tok_lem_sentence.values, total_examples=word2vec_model.corpus_count, epochs=10)
+        # # word2vec_model = decompress_pickle("../model/word2vec_model_avi.pbz2") 
+        # with open("../model/vectorizer_avi.pkl", "rb") as f:
+        #     vectorizer = pickle.load(f)
         query_sentence = f"{text} {predicted_sentence}"
         best_index = predict_w2v(query_sentence, df['tok_lem_sentence'].values, word2vec_model)    
         final_output = df[['original_title', 'genres', 'sentence']].iloc[best_index]
         st.markdown("Recommended movies:")
         st.write(final_output)
+
+
+
+        
+        # Predict
+        # df['spacy_sentence'] = df['spacy_sentence'].apply(lambda x: x.split(" "))
+        # embed_mat = df['spacy_sentence'].values
+        # with open("../model/spacy_avi_embed.pkl", "rb") as f:
+        #     embed_mat = pickle.load(f)
+        # #print(embed_mat)
+        # #st.write(embed_mat[0:2])
+        # best_index = predict_spacy(nlp, query_sentence, embed_mat)
+        # final_output = df[['original_title', 'genres', 'sentence']].iloc[best_index]
+        # st.write(final_output)
+
+
+        # vecotrizer output
+        # tfidf_mat = vectorizer.fit_transform(df['sentence'].values) # -> (num_sentences, num_vocabulary)
+        # best_index = get_recommendations_tfidf(query_sentence, tfidf_mat)
+        # final_output = df[['original_title', 'genres', 'sentence']].iloc[best_index]
+        # st.write(final_output)
+
+
+        
+
