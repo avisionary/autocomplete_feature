@@ -201,14 +201,15 @@ if st.button("Get movie recommendations"):
     # Predict
     with st.spinner(text="In progress"):
         #Create model
-        word2vec_model = Word2Vec(min_count=0, workers = 8, vector_size=275) 
-        # Prepare vocab
-        word2vec_model.build_vocab(df.tok_lem_sentence.values)
-        # Train
-        word2vec_model.train(df.tok_lem_sentence.values, total_examples=word2vec_model.corpus_count, epochs=10)
+        # word2vec_model = Word2Vec(min_count=0, workers = 8, vector_size=275) 
+        # # Prepare vocab
+        # word2vec_model.build_vocab(df.tok_lem_sentence.values)
+        # # Train
+        # word2vec_model.train(df.tok_lem_sentence.values, total_examples=word2vec_model.corpus_count, epochs=10)
         # # word2vec_model = decompress_pickle("../model/word2vec_model_avi.pbz2") 
         # with open("../model/vectorizer_avi.pkl", "rb") as f:
         #     vectorizer = pickle.load(f)
+        word2vec_model = decompress_pickle("model/word2vec_model_avi.pbz2") 
         query_sentence = f"{text} {predicted_sentence}"
         best_index = predict_w2v(query_sentence, df['tok_lem_sentence'].values, word2vec_model)    
         final_output = df[['original_title', 'genres', 'sentence']].iloc[best_index]
