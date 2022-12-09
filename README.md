@@ -1,4 +1,4 @@
-# Auto Completion and Movie Recommendation
+# Sentence Auto Completion and Movie Recommendation
 ### By: Avi Arora, Raghav Sharma, Tahera Ahmed, Sonali Pednekar
 
 ## Usage
