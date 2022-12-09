@@ -15,6 +15,22 @@ from tensorflow.keras.models import load_model
 import numpy as np
 import pickle
 
+import bz2
+import pickle
+import _pickle as cPickle
+
+# Load any compressed pickle file
+def decompress_pickle(file):
+ data = bz2.BZ2File(file, 'rb')
+ data = cPickle.load(data)
+ return data
+
+
+
+# reading in dataset
+df = pd.read_csv("../data/tok_lem_sentence.csv")
+#st.write(df.head())
+
 
 
 # Title
@@ -45,6 +61,39 @@ def Predict_Next_Words(model, tokenizer, text):
         return predicted_word
 
 
+
+def is_word_in_model(word, model):
+    """
+    Check on individual words ``word`` that it exists in ``model``.
+    """
+    assert type(model).__name__ == 'KeyedVectors'
+    is_in_vocab = word in model.key_to_index.keys()
+    return is_in_vocab
+
+def predict_w2v(query_sentence, dataset, model, topk=3):
+    query_sentence = query_sentence.split()
+    in_vocab_list, best_index = [], [0]*topk
+    for w in query_sentence:
+        # remove unseen words from query sentence
+        if is_word_in_model(w, model.wv):
+            in_vocab_list.append(w)
+    # Retrieve the similarity between two words as a distance
+    if len(in_vocab_list) > 0:
+        sim_mat = np.zeros(len(dataset))  # TO DO
+        for i, data_sentence in enumerate(dataset):
+            if data_sentence:
+                sim_sentence = model.wv.n_similarity(
+                        in_vocab_list, data_sentence)
+            else:
+                sim_sentence = 0
+            sim_mat[i] = np.array(sim_sentence)
+        # Take the five highest norm
+        best_index = np.argsort(sim_mat)[::-1][:topk]
+    return best_index
+
+
+
+
 print_sentence1 = st.empty()
 
 print_sentence2 = st.empty()
@@ -53,7 +102,7 @@ print_sentence2 = st.empty()
 
 ques1 = st.radio(
 
-    "Ready to get prediction?",
+    "Click yes to complete sentence!",
 
     ('No','Yes'))
 
@@ -79,49 +128,31 @@ if ques1 == "Yes":
     mk_sentnce = f'<p style="font-family:Courier; color:Blue; font-size: 20px;">{text} "{predicted_sentence}"</p>'
     print(predicted_words)
     st.markdown(f"Predicted Sentence:")
+    st.write(f"{text} '*{predicted_sentence}* '")
+    #st.markdown(mk_sentnce,unsafe_allow_html=True)
     
-    st.markdown(mk_sentnce,unsafe_allow_html=True)
-    
-
-    picked_word=st.text_input("Which predicted word would like to go forward with?")
-
-    if picked_word=='adventures':
-        st.write(f"Movie Recommendation: Frankie Starlight, The quirky story of a young boy's adventures growing up with his stunningly beautiful mother and the two very different men who love her.")
-        
 
 
 
+st.subheader("Press the button below to get movie recommendations based on this sentence")
 
+# If button is pressed
+if st.button("Get movie recommendations"):
 
-
-
-
-
-
-
-
-
-
-        # print(predicted_word)
-
-
-
-
-
-
-
-
-
-    # # Unpickle classifier
-    # clf = joblib.load("StackedPickle.pkl")
-    
-    # # Store inputs into dataframe
-    # X = pd.DataFrame([[u_p_total, uxp_reorder_ratio, u_total_orders,u_reordered_ratio,p_total,p_reordered_ratio]], 
-    #                  columns = ["u_p_total", "uxp_reorder_ratio", "u_total_orders",'u_reordered_ratio',"p_total","p_reordered_ratio"])
-
-    
-    # # Get prediction
-    # prediction = clf.predict(X)[0]
-    
-    # # Output prediction
-    # st.text(f"This product will be {prediction}")
+    #st.write(f"Movie Recommendation: Frankie Starlight, The quirky story of a young boy's adventures growing up with his stunningly beautiful mother and the two very different men who love her.")
+    # Create model
+    # word2vec_model = Word2Vec(min_count=0, workers = 8, vector_size=275) 
+    # # Prepare vocab
+    # word2vec_model.build_vocab(df.tok_lem_sentence.values)
+    # # Train
+    # word2vec_model.train(df.tok_lem_sentence.values, total_examples=word2vec_model.corpus_count, epochs=30)
+    # Predict
+    with st.spinner(text="In progress"):
+        word2vec_model = decompress_pickle("../model/word2vec_model_avi.pbz2") 
+        # with open("../model/word2vec_model_avi.pkl", "rb") as f:
+        #     word2vec_model = pickle.load(f)
+        query_sentence = f"{text} {predicted_sentence}"
+        best_index = predict_w2v(query_sentence, df['tok_lem_sentence'].values, word2vec_model)    
+        final_output = df[['original_title', 'genres', 'sentence']].iloc[best_index]
+        st.markdown("Recommended movies:")
+        st.write(final_output)
