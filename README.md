@@ -1,6 +1,10 @@
 # Auto Completion and Movie Recommendation
 ### By: Avi Arora, Raghav Sharma, Tahera Ahmed, Sonali Pednekar
 
+## Usage
+This model has been deployed and can be explored further at :
+https://avisionary-autocomplete-feature-app-nlp-u649hs.streamlit.app/
+
 ## Introduction
 The term text prediction means a set of computer programs and algorithms, which help users edit text with higher efficiency. It can be seen in computer and mobile device applications such as email editors, texting, and web browsers. 
 Auto-completion refers to the completion of a word, or a phrase, as we start typing in a document. The prediction is based upon the selection of the most likely word from a set of frequently used words. 
