@@ -31,7 +31,7 @@ def decompress_pickle(file):
 
 
 # reading in dataset
-df = pd.read_csv("../data/tok_lem_sentence.csv")
+df = pd.read_csv("data/tok_lem_sentence.csv")
 #st.write(df.head())
 
 
@@ -163,12 +163,12 @@ if ques1 == "Yes":
     # Load the model and tokenizer
     tokenizer = pickle.load(open('../model/tokenizer_avi.pkl', 'rb'))
     # load json and create model
-    json_file = open('../model/nextword.json', 'r')
+    json_file = open('model/nextword.json', 'r')
     loaded_model_json = json_file.read()
     json_file.close()
     loaded_model = model_from_json(loaded_model_json)
     # load weights into new model
-    loaded_model.load_weights("../model/nextword_avi.h5")
+    loaded_model.load_weights("model/nextword_avi.h5")
 
     #text= 'adventures with' 
     text2 = text.split(" ")
