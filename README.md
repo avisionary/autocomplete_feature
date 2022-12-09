@@ -2,7 +2,7 @@
 ### By: Avi Arora, Raghav Sharma, Tahera Ahmed, Sonali Pednekar
 
 ## Usage
-This model has been deployed and can be explored further at :
+This model has been deployed and can be explored further at : <br>
 https://avisionary-autocomplete-feature-app-nlp-u649hs.streamlit.app/
 
 ## Introduction
@@ -58,8 +58,8 @@ Steps for deployment:
 ## Results
 * Text prediction and autocomplete can help people to increase their writing speed by predicting the relevant words. 
 * The model has proved efficient in prediction and completion of text. The results from recommendation algorithms add to the comfort of user allowing them to navigate better on the app.
-* Use of Perplexity
-
+* Perplexity has been used as a final metric and it can be seen that as the epochs increase, perplexity decreases.
+![movie_perp](plots/perplexity_lstm_output.png) 
 ## Future Scope
 A new dataset can be created containing the ‘sent gmail’ text message of the group members (which can be retrieved using Google Takeout). The text can be then processed, converted from mbox to txt and then cleaned using a pipeline. Then, this text will be feeded into our LSTM model to make an auto complete feature personal to each of the team members.
 
