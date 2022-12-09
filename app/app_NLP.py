@@ -76,9 +76,10 @@ if ques1 == "Yes":
     text2 = ''.join(text2)
     predicted_words = Predict_Next_Words(loaded_model, tokenizer, text)
     predicted_sentence = " ".join(predicted_words)
-    mk_sentnce = f'<p style="font-family:Courier; color:Black; font-size: 15px;">Predicted Sentence:</p><p style="font-family:Courier; color:Blue; font-size: 20px;">{text} "{predicted_sentence}"</p>'
+    mk_sentnce = f'<p style="font-family:Courier; color:Blue; font-size: 20px;">{text} "{predicted_sentence}"</p>'
     print(predicted_words)
-    #st.markdown(f"Predicted Sentence:")
+    st.markdown(f"Predicted Sentence:")
+    
     st.markdown(mk_sentnce,unsafe_allow_html=True)
     
 
